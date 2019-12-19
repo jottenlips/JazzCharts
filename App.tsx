@@ -13,65 +13,56 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  View,
-  Text,
   StatusBar,
+  Text,
+  View
 } from 'react-native';
 
 import {
-  Header,
-  LearnMoreLinks,
   Colors,
-  DebugInstructions,
-  ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import { ApolloProvider, useQuery } from '@apollo/react-hooks';
+import { gql } from 'apollo-boost';
+
+import ApolloClient from 'apollo-boost';
+
+export const client = new ApolloClient({
+  uri: 'https://48p1r2roz4.sse.codesandbox.io',
+});
+
+const EXCHANGE_RATES = gql`
+  {
+    rates(currency: "USD") {
+      currency
+      rate
+    }
+  }
+`;
+
+const DataComponent = (_props: any) => {
+  const { loading, error, data } = useQuery(EXCHANGE_RATES);
+
+  if (loading) return <Text>Loading...</Text>;
+  if (error) return <Text>Error :(</Text>;
+
+  return data.rates.map((rate: any) => (
+      <Text>{rate.rate}</Text>
+  ))
+}
+
 const App = () => {
-  const usingHermes = typeof HermesInternal === 'object' && HermesInternal !== null;
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {!usingHermes ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+    <ApolloProvider client={client}>
+    <StatusBar barStyle="dark-content" />
+    <SafeAreaView>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        style={styles.scrollView}>
+        <DataComponent/>
+      </ScrollView>
+    </SafeAreaView>
+    </ApolloProvider>
   );
 };
 
