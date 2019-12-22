@@ -8,7 +8,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -17,14 +17,28 @@ import {
 } from 'react-native';
 
 import { ApolloProvider, useQuery } from '@apollo/react-hooks';
-import { gql } from 'apollo-boost';
-
+import DefaultClient, { gql } from 'apollo-boost';
 import ApolloClient from 'apollo-boost';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { persistCache } from 'apollo-cache-persist';
+import { AsyncStorage } from 'react-native';
 
-export const client = new ApolloClient({
-  uri: 'https://48p1r2roz4.sse.codesandbox.io',
-});
+const cache = new InMemoryCache();
 
+const createClient = async () => {
+  await persistCache({
+    cache,
+      // @ts-ignore
+    storage: AsyncStorage,
+  });
+
+
+  const client = new ApolloClient({
+    uri: 'https://48p1r2roz4.sse.codesandbox.io',
+    cache
+  });
+  return client;
+}
 const EXCHANGE_RATES = gql`
   {
     rates(currency: "USD") {
@@ -50,7 +64,14 @@ const DataComponent = (_props: any) => {
   ))
 }
 
-const App = () => {
+const App: React.FC = () => {
+  const [client, setClient] = useState(undefined as any);
+
+  useEffect(() => {
+    createClient().then(apollo => setClient(apollo));
+    return () => {};
+  }, []);
+  if (client === undefined) return <Text>Loading...</Text>;
   return (
     <ApolloProvider client={client}>
     <StatusBar barStyle="dark-content" />
