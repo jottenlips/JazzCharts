@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 
 import { ApolloProvider, useQuery } from '@apollo/react-hooks';
-import DefaultClient, { gql } from 'apollo-boost';
+import { gql } from 'apollo-boost';
 import ApolloClient from 'apollo-boost';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { persistCache } from 'apollo-cache-persist';
